@@ -9,6 +9,8 @@ AC_ARG_ENABLE(alsa,
   [  --disable-alsa          don't compile ALSA support])
 AC_ARG_ENABLE(pulseaudio,
   [  --enable-pulseaudio     compile PulseAudio support])
+AC_ARG_ENABLE(nds,
+  [  --enable-nds            compile for Nintendo DS])
 
 AC_SUBST(LD_VERSCRIPT)
 AC_CANONICAL_HOST
@@ -118,6 +120,7 @@ AM_CONDITIONAL([SOUND_BEOS], [false])
 AM_CONDITIONAL([SOUND_BSD], [false])
 AM_CONDITIONAL([SOUND_COREAUDIO], [false])
 AM_CONDITIONAL([SOUND_HPUX], [false])
+AM_CONDITIONAL([SOUND_NDS], [false])
 AM_CONDITIONAL([SOUND_NETBSD], [false])
 AM_CONDITIONAL([SOUND_OSS], [false])
 AM_CONDITIONAL([SOUND_PULSEAUDIO], [false])
@@ -162,6 +165,11 @@ AS_IF([test "$enable_pulseaudio" = "yes"], [
 AS_IF([test "$enable_pulseaudio" = "yes"], [
   AC_DEFINE(SOUND_PULSEAUDIO, 1, [ ])
   AM_CONDITIONAL([SOUND_PULSEAUDIO], [true])
+])
+
+AS_IF([test "$enable_nds" = "yes"], [
+  AC_DEFINE(SOUND_NDS, 1, [ ])
+  AM_CONDITIONAL([SOUND_NDS], [true])
 ])
 
 case "${host_os}" in

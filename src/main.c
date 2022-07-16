@@ -20,7 +20,6 @@
 #endif
 #include <sys/types.h>
 #include <unistd.h>
-#include <stdarg.h>
 #if defined(HAVE_GETOPT_H) && defined(HAVE_GETOPT_LONG)
 #include <getopt.h>
 #else
@@ -36,22 +35,15 @@
 #include <windows.h>
 #endif
 
+#ifdef __NDS__
+#include <stdbool.h>
+#include <filesystem.h>
+#endif
+
 static struct sound_driver *sound;
 static unsigned int foreground_in, foreground_out;
 static int refresh_status;
 
-
-int report(const char *fmt, ...)
-{
-	va_list a;
-	int n;
-
-	va_start(a, fmt);
-	n = vfprintf(stderr, fmt, a);
-	va_end(a);
-
-	return n;
-}
 
 #ifdef HAVE_SIGNAL_H
 static void cleanup(int sig)
@@ -252,6 +244,13 @@ int main(int argc, char **argv)
 	int val, lf_flag;
 	int flags;
 	int played;
+#ifdef __NDS__
+	int fake_argc = 2;
+	char *fake_argv[] = { "xmp", "nitro:/girl_from_mars.xm", NULL };
+	argc = fake_argc;
+	argv = fake_argv;
+	nitroFSInit(NULL);
+#endif
 #if defined(_WIN32)
 	setvbuf(stderr, NULL, _IONBF, 0);
 	srand(GetTickCount());
@@ -265,6 +264,7 @@ int main(int argc, char **argv)
 	srand(tv.tv_usec);
 #endif
 
+	init_tty();
 	init_sound_drivers();
 
 	memset(&opt, 0, sizeof (struct options));

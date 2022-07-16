@@ -6,6 +6,7 @@
  * file for more information.
  */
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <xmp.h>
 #include "common.h"
@@ -20,12 +21,56 @@
 #define MODE_NORMAL 0
 #define MODE_RAW 1
 
+#elif defined(__NDS__)
+#include <nds.h>
+
+static PrintConsole mainConsole, debugConsole;
+
 #elif defined HAVE_TERMIOS_H
 #include <termios.h>
 #include <unistd.h>
 
 static struct termios term;
 #endif
+
+int report(const char *fmt, ...)
+{
+#ifdef __NDS__
+	va_list a;
+	int n;
+
+	consoleSelect(&mainConsole);
+	va_start(a, fmt);
+	n = viprintf(fmt, a);
+	va_end(a);
+	consoleSelect(&debugConsole);
+
+	return n;
+#else
+	va_list a;
+	int n;
+
+	va_start(a, fmt);
+	n = vfprintf(stderr, fmt, a);
+	va_end(a);
+
+	return n;
+#endif
+}
+
+void init_tty(void)
+{
+#ifdef __NDS__
+	videoSetMode(MODE_0_2D);
+	videoSetModeSub(MODE_0_2D);
+
+	vramSetBankA(VRAM_A_MAIN_BG);
+	vramSetBankC(VRAM_C_SUB_BG);
+
+	consoleInit(&mainConsole, 3, BgType_Text4bpp, BgSize_T_256x256, 31, 0, true, true);
+	consoleInit(&debugConsole, 3, BgType_Text4bpp, BgSize_T_256x256, 31, 0, false, true);
+#endif
+}
 
 int set_tty(void)
 {

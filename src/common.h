@@ -87,6 +87,7 @@ int read_config(struct options *);
 void read_modconf(struct options *, const unsigned char *);
 
 /* terminal */
+void init_tty(void);
 int set_tty(void);
 int reset_tty(void);
 

@@ -13,6 +13,22 @@ xmp_SOURCES = \
 xmp_LDADD   = ${LIBXMP_LIBS}
 xmp_LDFLAGS = ${XMP_DARWIN_LDFLAGS}
 
+if SOUND_NDS
+xmp_SOURCES += sound_nds.c
+xmp_LDADD   += -lfilesystem -lfat
+xmp_LDFLAGS += -specs=ds_arm9.specs
+
+xmp.nds: xmp$(EXEEXT)
+	@if ! $(AM_V_P); then echo "  NDSTOOL  $@"; fi
+	$(AM_V_at)ndstool -c $@ -9 $^ -d $(srcdir)/nitrofs
+
+all-local: xmp.nds
+
+clean-local:
+	-rm -f xmp.nds
+
+endif
+
 if SOUND_OSS
 xmp_SOURCES += sound_oss.c
 endif
