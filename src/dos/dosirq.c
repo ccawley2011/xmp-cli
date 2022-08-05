@@ -280,6 +280,9 @@ static struct irq_handle *__irqs[16];
 static int (*__irq_confirm) (int irqno);
 static volatile unsigned int __irq_mask;
 static volatile unsigned int __irq_count[16];
+#if defined(__WATCOMC__)
+static void nop(void);
+#pragma aux nop = "nop"
 
 #define DECLARE_IRQ_HANDLER(irqno)							\
 static void INTERRUPT_ATTRIBUTES NO_REORDER __irq##irqno##_handler ()						\
@@ -293,7 +296,23 @@ static void INTERRUPT_ATTRIBUTES NO_REORDER __irq##irqno##_handler ()						\
 }															\
 static void NO_REORDER __irq##irqno##_end(void)								\
 {															\
+    nop();														\
 }
+#else
+#define DECLARE_IRQ_HANDLER(irqno)							\
+static void INTERRUPT_ATTRIBUTES NO_REORDER __irq##irqno##_handler ()						\
+{															\
+  if (irq_check (__irqs [irqno]) && __irq_confirm (irqno))	\
+  {															\
+    __irq_count [irqno]++;									\
+    __irq_mask |= (1 << irqno);								\
+  }															\
+  irq_ack (__irqs [irqno]);									\
+}															\
+static void NO_REORDER __irq##irqno##_end(void)								\
+{															\
+}
+#endif
 
 /* *INDENT-OFF* */
 DECLARE_IRQ_HANDLER(0)
